@@ -30,3 +30,16 @@ blockchair_dash_latest.txt          # list of all files
 blockchair_dash_blocks_20xx_qX.tsv  # bundled quarters
 blockchair_dash_blocks_latest.tsv   # most recent daily file
 ```
+
+# Verifying
+
+To start from scratch and re-download everything:
+
+```sh
+rm -rf ./gz/
+./bin/blockchair_dash_download
+
+git status
+```
+
+If any files show up as modified, something went wrong.
