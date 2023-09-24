@@ -1,0 +1,57 @@
+#!/bin/sh
+set -e
+set -u
+
+my_base_url="https://gz.blockchair.com/dash/blocks"
+
+fn_curl() { (
+    my_file_gz="${1}"
+
+    echo "    ./gz/${my_file_gz}"
+    if ! test -r "./gz/${my_file_gz}"; then
+        curl -o "./${my_file_gz}" -fsSL "${my_base_url}/${my_file_gz}"
+        mv "./${my_file_gz}" "./gz/${my_file_gz}"
+    fi
+); }
+
+fn_gunzip() { (
+    my_file_gz="${1}"
+    my_file_tsv="$(basename "${my_file_gz}" ".gz")"
+
+    echo "    ./tsv/${my_file_tsv}"
+    if ! test -r "./tsv/${my_file_tsv}"; then
+        gunzip --keep "./gz/${my_file_gz}"
+        mv "./gz/${my_file_tsv}" "./tsv/${my_file_tsv}"
+    fi
+); }
+
+main() { (
+
+    echo "Creating '${HOME}/Projects/Dash/dashblockchair/'..."
+    mkdir -p "${HOME}/Projects/Dash/dashblockchair/gz"
+    mkdir -p "${HOME}/Projects/Dash/dashblockchair/tsv"
+    cd "${HOME}/Projects/Dash/dashblockchair/" || exit 1
+
+    echo "Downloading 'blockchair_dash_latest.html'..."
+    curl -fsSL "${my_base_url}/" > ./blockchair_dash_latest.html
+    sed -E 's/\"/\n/g' ./blockchair_dash_latest.html | grep '\.tsv\.gz$' \
+        > ./blockchair_dash_latest.txt
+    my_files="$(
+        cat ./blockchair_dash_latest.txt
+    )"
+
+    echo "Downloading all..."
+    for my_file_gz in ${my_files}; do
+        fn_curl "${my_file_gz}"
+    done
+
+    echo "Unzipping all..."
+    for my_file_gz in ${my_files}; do
+        fn_gunzip "${my_file_gz}"
+
+        my_file_tsv="$(basename "${my_file_gz}" ".gz")"
+        ln -sf "./tsv/${my_file_tsv}" ./blockchair_dash_blocks_latest.tsv
+    done
+); }
+
+main
