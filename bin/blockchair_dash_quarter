@@ -21,6 +21,7 @@ fn_concat() { (
     my_q="${3}"
 
     my_qname="blockchair_dash_blocks_${my_year}_${my_q}.tsv"
+    my_partial="blockchair_dash_blocks_${my_year}_${my_q}-partial.tsv"
 
     echo "Preparing ./${my_qname}..."
     rm -f "./${my_qname}"
@@ -35,8 +36,9 @@ fn_concat() { (
         fi
         fn_gunzip "${my_file_gz}"
 
-        cat "./tsv/${my_file_tsv}" >> "${my_qname}"
+        cat "./tsv/${my_file_tsv}" >> "${my_partial}"
     done
+    mv "${my_partial}" "${my_qname}"
 
     echo ""
 ); }
