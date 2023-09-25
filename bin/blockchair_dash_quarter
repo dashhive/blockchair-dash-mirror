@@ -2,8 +2,6 @@
 set -e
 set -u
 
-cd "${HOME}/Projects/Dash/dashblockchair/" || exit 1
-
 fn_gunzip() { (
     my_file_gz="${1}"
     my_file_tsv="$(basename "${my_file_gz}" ".gz")"
@@ -23,7 +21,7 @@ fn_concat() { (
     my_qname="blockchair_dash_blocks_${my_year}_${my_q}.tsv"
     my_partial="blockchair_dash_blocks_${my_year}_${my_q}-partial.tsv"
 
-    echo "Preparing ./${my_qname}..."
+    echo "Preparing ./quarterlies/${my_qname}..."
     rm -f "./${my_qname}"
 
     for my_file_gz in $my_files; do
@@ -38,7 +36,7 @@ fn_concat() { (
 
         cat "./tsv/${my_file_tsv}" >> "${my_partial}"
     done
-    mv "${my_partial}" "${my_qname}"
+    mv "${my_partial}" "./quarterlies/${my_qname}"
 
     echo ""
 ); }
@@ -645,6 +643,16 @@ my_years='2015
 2032'
 
 main() { (
+    cd "${HOME}/Projects/Dash/dashblockchair/" || exit 1
+    git submodule init
+    git submodule update
+    (
+        cd ./quarterlies/ || exit 1
+        git switch main
+        git pull
+    )
+    git add ./quarterlies/
+
     fn_quarter_initial
     fn_quarter_2 2014
     fn_quarter_3 2014

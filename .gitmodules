@@ -1,0 +1,3 @@
+[submodule "quarterlies"]
+	path = quarterlies
+	url = https://github.com/dashhive/blockchair-dash-quarterlies.git
