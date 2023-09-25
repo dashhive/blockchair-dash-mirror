@@ -7,7 +7,7 @@ An ad-hoc mirror of blockchair's dash data for faster retrieval.
 This project does use a hard-coded directory. Sorry.
 
 ```sh
-mkdir ~/Projects/Dash/
+mkdir -p ~/Projects/Dash/
 git clone https://github.com/dashhive/blockchair-dash-mirror.git ./dashblockchair
 ```
 
@@ -19,6 +19,8 @@ git clone https://github.com/dashhive/blockchair-dash-mirror.git ./dashblockchai
 
 ```sh
 pushd ~/Projects/Dash/dashblockchair/
+./bin/blockchair_dash_quarter
+
 ./bin/blockchair_dash_download
 ./bin/blockchair_dash_quarter
 ```
