@@ -22,8 +22,8 @@ fn_concat() { (
     my_partial="blockchair_dash_blocks_${my_year}_${my_q}-partial.tsv"
 
     echo "Preparing ./quarterlies/${my_qname}..."
-    rm -f "./${my_qname}"
 
+    rm -f "${my_partial}"
     for my_file_gz in $my_files; do
         my_file_tsv="$(basename "${my_file_gz}" ".gz")"
 
@@ -45,7 +45,9 @@ fn_yearly() { (
     my_year="${1}"
     my_leap="$((my_year % 4))"
 
-    if test "0" = "${my_leap}"; then
+    if test "2014" = "${my_year}"; then
+        fn_quarter_initial
+    elif test "0" = "${my_leap}"; then
         fn_quarter_1_leap "${my_year}"
     else
         fn_quarter_1 "${my_year}"
@@ -623,7 +625,8 @@ blockchair_dash_blocks_${my_year}1231.tsv.gz"
     fn_concat "${my_files}" "${my_year}" "q4"
 ); }
 
-my_years='2015
+my_years='2014
+2015
 2016
 2017
 2018
@@ -652,11 +655,6 @@ main() { (
         git pull
     )
     git add ./quarterlies/
-
-    fn_quarter_initial
-    fn_quarter_2 2014
-    fn_quarter_3 2014
-    fn_quarter_4 2014
 
     for my_year in ${my_years}; do
         fn_yearly "${my_year}"
