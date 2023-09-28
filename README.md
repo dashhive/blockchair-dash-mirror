@@ -2,6 +2,8 @@
 
 An ad-hoc mirror of blockchair's dash data for faster retrieval.
 
+Source data: <https://gz.blockchair.com/dash/blocks/>
+
 # Prerequisites
 
 This project does use a hard-coded directory. Sorry.
