@@ -1,0 +1,661 @@
+#!/bin/sh
+set -e
+set -u
+
+fn_gunzip() { (
+    my_file_gz="${1}"
+    my_file_tsv="$(basename "${my_file_gz}" ".gz")"
+
+    echo "    ./tsv/${my_file_tsv}"
+    if ! test -r "./tsv/${my_file_tsv}"; then
+        gunzip --keep "./gz/${my_file_gz}"
+        mv "./gz/${my_file_tsv}" "./tsv/${my_file_tsv}"
+    fi
+); }
+
+fn_concat_year() { (
+    my_files="${1}"
+    my_yname="${2}"
+
+    for my_file_gz in $my_files; do
+        my_file_tsv="$(basename "${my_file_gz}" ".gz")"
+
+        if ! test -e "./gz/${my_file_gz}"; then
+            echo >&2 "'./gz/${my_file_gz}' not downloaded yet"
+            return 1
+
+        fi
+        fn_gunzip "${my_file_gz}"
+
+        cat "./tsv/${my_file_tsv}" >> "./yearlies/${my_yname}"
+    done
+); }
+
+fn_annual() { (
+    my_year="${1}"
+    my_leap="$((my_year % 4))"
+    my_yname="blockchair_dash_blocks_${my_year}.tsv"
+
+    echo "Preparing ./yearlies/${my_yname}..."
+    rm -rf "./yearlies/${my_yname}"
+
+    if test "2014" = "${my_year}"; then
+        fn_quarter_inagural "${my_year}" "${my_yname}"
+    elif test "0" = "${my_leap}"; then
+        fn_quarter_1_leap "${my_year}" "${my_yname}"
+    else
+        fn_quarter_1 "${my_year}" "${my_yname}"
+    fi
+    fn_quarter_2 "${my_year}" "${my_yname}"
+    fn_quarter_3 "${my_year}" "${my_yname}"
+    fn_quarter_4 "${my_year}" "${my_yname}"
+
+    echo ""
+); }
+
+fn_quarter_inagural() { (
+    #my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_20140119.tsv.gz
+blockchair_dash_blocks_20140120.tsv.gz
+blockchair_dash_blocks_20140121.tsv.gz
+blockchair_dash_blocks_20140122.tsv.gz
+blockchair_dash_blocks_20140123.tsv.gz
+blockchair_dash_blocks_20140124.tsv.gz
+blockchair_dash_blocks_20140125.tsv.gz
+blockchair_dash_blocks_20140126.tsv.gz
+blockchair_dash_blocks_20140127.tsv.gz
+blockchair_dash_blocks_20140128.tsv.gz
+blockchair_dash_blocks_20140129.tsv.gz
+blockchair_dash_blocks_20140130.tsv.gz
+blockchair_dash_blocks_20140131.tsv.gz
+blockchair_dash_blocks_20140201.tsv.gz
+blockchair_dash_blocks_20140202.tsv.gz
+blockchair_dash_blocks_20140203.tsv.gz
+blockchair_dash_blocks_20140204.tsv.gz
+blockchair_dash_blocks_20140205.tsv.gz
+blockchair_dash_blocks_20140206.tsv.gz
+blockchair_dash_blocks_20140207.tsv.gz
+blockchair_dash_blocks_20140208.tsv.gz
+blockchair_dash_blocks_20140209.tsv.gz
+blockchair_dash_blocks_20140210.tsv.gz
+blockchair_dash_blocks_20140211.tsv.gz
+blockchair_dash_blocks_20140212.tsv.gz
+blockchair_dash_blocks_20140213.tsv.gz
+blockchair_dash_blocks_20140214.tsv.gz
+blockchair_dash_blocks_20140215.tsv.gz
+blockchair_dash_blocks_20140216.tsv.gz
+blockchair_dash_blocks_20140217.tsv.gz
+blockchair_dash_blocks_20140218.tsv.gz
+blockchair_dash_blocks_20140219.tsv.gz
+blockchair_dash_blocks_20140220.tsv.gz
+blockchair_dash_blocks_20140221.tsv.gz
+blockchair_dash_blocks_20140222.tsv.gz
+blockchair_dash_blocks_20140223.tsv.gz
+blockchair_dash_blocks_20140224.tsv.gz
+blockchair_dash_blocks_20140225.tsv.gz
+blockchair_dash_blocks_20140226.tsv.gz
+blockchair_dash_blocks_20140227.tsv.gz
+blockchair_dash_blocks_20140228.tsv.gz
+blockchair_dash_blocks_20140301.tsv.gz
+blockchair_dash_blocks_20140302.tsv.gz
+blockchair_dash_blocks_20140303.tsv.gz
+blockchair_dash_blocks_20140304.tsv.gz
+blockchair_dash_blocks_20140305.tsv.gz
+blockchair_dash_blocks_20140306.tsv.gz
+blockchair_dash_blocks_20140307.tsv.gz
+blockchair_dash_blocks_20140308.tsv.gz
+blockchair_dash_blocks_20140309.tsv.gz
+blockchair_dash_blocks_20140310.tsv.gz
+blockchair_dash_blocks_20140311.tsv.gz
+blockchair_dash_blocks_20140312.tsv.gz
+blockchair_dash_blocks_20140313.tsv.gz
+blockchair_dash_blocks_20140314.tsv.gz
+blockchair_dash_blocks_20140315.tsv.gz
+blockchair_dash_blocks_20140316.tsv.gz
+blockchair_dash_blocks_20140317.tsv.gz
+blockchair_dash_blocks_20140318.tsv.gz
+blockchair_dash_blocks_20140319.tsv.gz
+blockchair_dash_blocks_20140320.tsv.gz
+blockchair_dash_blocks_20140321.tsv.gz
+blockchair_dash_blocks_20140322.tsv.gz
+blockchair_dash_blocks_20140323.tsv.gz
+blockchair_dash_blocks_20140324.tsv.gz
+blockchair_dash_blocks_20140325.tsv.gz
+blockchair_dash_blocks_20140326.tsv.gz
+blockchair_dash_blocks_20140327.tsv.gz
+blockchair_dash_blocks_20140328.tsv.gz
+blockchair_dash_blocks_20140329.tsv.gz
+blockchair_dash_blocks_20140330.tsv.gz
+blockchair_dash_blocks_20140331.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+fn_quarter_1() { (
+    my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_${my_year}0101.tsv.gz
+blockchair_dash_blocks_${my_year}0102.tsv.gz
+blockchair_dash_blocks_${my_year}0103.tsv.gz
+blockchair_dash_blocks_${my_year}0104.tsv.gz
+blockchair_dash_blocks_${my_year}0105.tsv.gz
+blockchair_dash_blocks_${my_year}0106.tsv.gz
+blockchair_dash_blocks_${my_year}0107.tsv.gz
+blockchair_dash_blocks_${my_year}0108.tsv.gz
+blockchair_dash_blocks_${my_year}0109.tsv.gz
+blockchair_dash_blocks_${my_year}0110.tsv.gz
+blockchair_dash_blocks_${my_year}0111.tsv.gz
+blockchair_dash_blocks_${my_year}0112.tsv.gz
+blockchair_dash_blocks_${my_year}0113.tsv.gz
+blockchair_dash_blocks_${my_year}0114.tsv.gz
+blockchair_dash_blocks_${my_year}0115.tsv.gz
+blockchair_dash_blocks_${my_year}0116.tsv.gz
+blockchair_dash_blocks_${my_year}0117.tsv.gz
+blockchair_dash_blocks_${my_year}0118.tsv.gz
+blockchair_dash_blocks_${my_year}0119.tsv.gz
+blockchair_dash_blocks_${my_year}0120.tsv.gz
+blockchair_dash_blocks_${my_year}0121.tsv.gz
+blockchair_dash_blocks_${my_year}0122.tsv.gz
+blockchair_dash_blocks_${my_year}0123.tsv.gz
+blockchair_dash_blocks_${my_year}0124.tsv.gz
+blockchair_dash_blocks_${my_year}0125.tsv.gz
+blockchair_dash_blocks_${my_year}0126.tsv.gz
+blockchair_dash_blocks_${my_year}0127.tsv.gz
+blockchair_dash_blocks_${my_year}0128.tsv.gz
+blockchair_dash_blocks_${my_year}0129.tsv.gz
+blockchair_dash_blocks_${my_year}0130.tsv.gz
+blockchair_dash_blocks_${my_year}0131.tsv.gz
+blockchair_dash_blocks_${my_year}0201.tsv.gz
+blockchair_dash_blocks_${my_year}0202.tsv.gz
+blockchair_dash_blocks_${my_year}0203.tsv.gz
+blockchair_dash_blocks_${my_year}0204.tsv.gz
+blockchair_dash_blocks_${my_year}0205.tsv.gz
+blockchair_dash_blocks_${my_year}0206.tsv.gz
+blockchair_dash_blocks_${my_year}0207.tsv.gz
+blockchair_dash_blocks_${my_year}0208.tsv.gz
+blockchair_dash_blocks_${my_year}0209.tsv.gz
+blockchair_dash_blocks_${my_year}0210.tsv.gz
+blockchair_dash_blocks_${my_year}0211.tsv.gz
+blockchair_dash_blocks_${my_year}0212.tsv.gz
+blockchair_dash_blocks_${my_year}0213.tsv.gz
+blockchair_dash_blocks_${my_year}0214.tsv.gz
+blockchair_dash_blocks_${my_year}0215.tsv.gz
+blockchair_dash_blocks_${my_year}0216.tsv.gz
+blockchair_dash_blocks_${my_year}0217.tsv.gz
+blockchair_dash_blocks_${my_year}0218.tsv.gz
+blockchair_dash_blocks_${my_year}0219.tsv.gz
+blockchair_dash_blocks_${my_year}0220.tsv.gz
+blockchair_dash_blocks_${my_year}0221.tsv.gz
+blockchair_dash_blocks_${my_year}0222.tsv.gz
+blockchair_dash_blocks_${my_year}0223.tsv.gz
+blockchair_dash_blocks_${my_year}0224.tsv.gz
+blockchair_dash_blocks_${my_year}0225.tsv.gz
+blockchair_dash_blocks_${my_year}0226.tsv.gz
+blockchair_dash_blocks_${my_year}0227.tsv.gz
+blockchair_dash_blocks_${my_year}0228.tsv.gz
+blockchair_dash_blocks_${my_year}0301.tsv.gz
+blockchair_dash_blocks_${my_year}0302.tsv.gz
+blockchair_dash_blocks_${my_year}0303.tsv.gz
+blockchair_dash_blocks_${my_year}0304.tsv.gz
+blockchair_dash_blocks_${my_year}0305.tsv.gz
+blockchair_dash_blocks_${my_year}0306.tsv.gz
+blockchair_dash_blocks_${my_year}0307.tsv.gz
+blockchair_dash_blocks_${my_year}0308.tsv.gz
+blockchair_dash_blocks_${my_year}0309.tsv.gz
+blockchair_dash_blocks_${my_year}0310.tsv.gz
+blockchair_dash_blocks_${my_year}0311.tsv.gz
+blockchair_dash_blocks_${my_year}0312.tsv.gz
+blockchair_dash_blocks_${my_year}0313.tsv.gz
+blockchair_dash_blocks_${my_year}0314.tsv.gz
+blockchair_dash_blocks_${my_year}0315.tsv.gz
+blockchair_dash_blocks_${my_year}0316.tsv.gz
+blockchair_dash_blocks_${my_year}0317.tsv.gz
+blockchair_dash_blocks_${my_year}0318.tsv.gz
+blockchair_dash_blocks_${my_year}0319.tsv.gz
+blockchair_dash_blocks_${my_year}0320.tsv.gz
+blockchair_dash_blocks_${my_year}0321.tsv.gz
+blockchair_dash_blocks_${my_year}0322.tsv.gz
+blockchair_dash_blocks_${my_year}0323.tsv.gz
+blockchair_dash_blocks_${my_year}0324.tsv.gz
+blockchair_dash_blocks_${my_year}0325.tsv.gz
+blockchair_dash_blocks_${my_year}0326.tsv.gz
+blockchair_dash_blocks_${my_year}0327.tsv.gz
+blockchair_dash_blocks_${my_year}0328.tsv.gz
+blockchair_dash_blocks_${my_year}0329.tsv.gz
+blockchair_dash_blocks_${my_year}0330.tsv.gz
+blockchair_dash_blocks_${my_year}0331.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+fn_quarter_1_leap() { (
+    my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_${my_year}0101.tsv.gz
+blockchair_dash_blocks_${my_year}0102.tsv.gz
+blockchair_dash_blocks_${my_year}0103.tsv.gz
+blockchair_dash_blocks_${my_year}0104.tsv.gz
+blockchair_dash_blocks_${my_year}0105.tsv.gz
+blockchair_dash_blocks_${my_year}0106.tsv.gz
+blockchair_dash_blocks_${my_year}0107.tsv.gz
+blockchair_dash_blocks_${my_year}0108.tsv.gz
+blockchair_dash_blocks_${my_year}0109.tsv.gz
+blockchair_dash_blocks_${my_year}0110.tsv.gz
+blockchair_dash_blocks_${my_year}0111.tsv.gz
+blockchair_dash_blocks_${my_year}0112.tsv.gz
+blockchair_dash_blocks_${my_year}0113.tsv.gz
+blockchair_dash_blocks_${my_year}0114.tsv.gz
+blockchair_dash_blocks_${my_year}0115.tsv.gz
+blockchair_dash_blocks_${my_year}0116.tsv.gz
+blockchair_dash_blocks_${my_year}0117.tsv.gz
+blockchair_dash_blocks_${my_year}0118.tsv.gz
+blockchair_dash_blocks_${my_year}0119.tsv.gz
+blockchair_dash_blocks_${my_year}0120.tsv.gz
+blockchair_dash_blocks_${my_year}0121.tsv.gz
+blockchair_dash_blocks_${my_year}0122.tsv.gz
+blockchair_dash_blocks_${my_year}0123.tsv.gz
+blockchair_dash_blocks_${my_year}0124.tsv.gz
+blockchair_dash_blocks_${my_year}0125.tsv.gz
+blockchair_dash_blocks_${my_year}0126.tsv.gz
+blockchair_dash_blocks_${my_year}0127.tsv.gz
+blockchair_dash_blocks_${my_year}0128.tsv.gz
+blockchair_dash_blocks_${my_year}0129.tsv.gz
+blockchair_dash_blocks_${my_year}0130.tsv.gz
+blockchair_dash_blocks_${my_year}0131.tsv.gz
+blockchair_dash_blocks_${my_year}0201.tsv.gz
+blockchair_dash_blocks_${my_year}0202.tsv.gz
+blockchair_dash_blocks_${my_year}0203.tsv.gz
+blockchair_dash_blocks_${my_year}0204.tsv.gz
+blockchair_dash_blocks_${my_year}0205.tsv.gz
+blockchair_dash_blocks_${my_year}0206.tsv.gz
+blockchair_dash_blocks_${my_year}0207.tsv.gz
+blockchair_dash_blocks_${my_year}0208.tsv.gz
+blockchair_dash_blocks_${my_year}0209.tsv.gz
+blockchair_dash_blocks_${my_year}0210.tsv.gz
+blockchair_dash_blocks_${my_year}0211.tsv.gz
+blockchair_dash_blocks_${my_year}0212.tsv.gz
+blockchair_dash_blocks_${my_year}0213.tsv.gz
+blockchair_dash_blocks_${my_year}0214.tsv.gz
+blockchair_dash_blocks_${my_year}0215.tsv.gz
+blockchair_dash_blocks_${my_year}0216.tsv.gz
+blockchair_dash_blocks_${my_year}0217.tsv.gz
+blockchair_dash_blocks_${my_year}0218.tsv.gz
+blockchair_dash_blocks_${my_year}0219.tsv.gz
+blockchair_dash_blocks_${my_year}0220.tsv.gz
+blockchair_dash_blocks_${my_year}0221.tsv.gz
+blockchair_dash_blocks_${my_year}0222.tsv.gz
+blockchair_dash_blocks_${my_year}0223.tsv.gz
+blockchair_dash_blocks_${my_year}0224.tsv.gz
+blockchair_dash_blocks_${my_year}0225.tsv.gz
+blockchair_dash_blocks_${my_year}0226.tsv.gz
+blockchair_dash_blocks_${my_year}0227.tsv.gz
+blockchair_dash_blocks_${my_year}0228.tsv.gz
+blockchair_dash_blocks_${my_year}0229.tsv.gz
+blockchair_dash_blocks_${my_year}0301.tsv.gz
+blockchair_dash_blocks_${my_year}0302.tsv.gz
+blockchair_dash_blocks_${my_year}0303.tsv.gz
+blockchair_dash_blocks_${my_year}0304.tsv.gz
+blockchair_dash_blocks_${my_year}0305.tsv.gz
+blockchair_dash_blocks_${my_year}0306.tsv.gz
+blockchair_dash_blocks_${my_year}0307.tsv.gz
+blockchair_dash_blocks_${my_year}0308.tsv.gz
+blockchair_dash_blocks_${my_year}0309.tsv.gz
+blockchair_dash_blocks_${my_year}0310.tsv.gz
+blockchair_dash_blocks_${my_year}0311.tsv.gz
+blockchair_dash_blocks_${my_year}0312.tsv.gz
+blockchair_dash_blocks_${my_year}0313.tsv.gz
+blockchair_dash_blocks_${my_year}0314.tsv.gz
+blockchair_dash_blocks_${my_year}0315.tsv.gz
+blockchair_dash_blocks_${my_year}0316.tsv.gz
+blockchair_dash_blocks_${my_year}0317.tsv.gz
+blockchair_dash_blocks_${my_year}0318.tsv.gz
+blockchair_dash_blocks_${my_year}0319.tsv.gz
+blockchair_dash_blocks_${my_year}0320.tsv.gz
+blockchair_dash_blocks_${my_year}0321.tsv.gz
+blockchair_dash_blocks_${my_year}0322.tsv.gz
+blockchair_dash_blocks_${my_year}0323.tsv.gz
+blockchair_dash_blocks_${my_year}0324.tsv.gz
+blockchair_dash_blocks_${my_year}0325.tsv.gz
+blockchair_dash_blocks_${my_year}0326.tsv.gz
+blockchair_dash_blocks_${my_year}0327.tsv.gz
+blockchair_dash_blocks_${my_year}0328.tsv.gz
+blockchair_dash_blocks_${my_year}0329.tsv.gz
+blockchair_dash_blocks_${my_year}0330.tsv.gz
+blockchair_dash_blocks_${my_year}0331.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+fn_quarter_2() { (
+    my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_${my_year}0401.tsv.gz
+blockchair_dash_blocks_${my_year}0402.tsv.gz
+blockchair_dash_blocks_${my_year}0403.tsv.gz
+blockchair_dash_blocks_${my_year}0404.tsv.gz
+blockchair_dash_blocks_${my_year}0405.tsv.gz
+blockchair_dash_blocks_${my_year}0406.tsv.gz
+blockchair_dash_blocks_${my_year}0407.tsv.gz
+blockchair_dash_blocks_${my_year}0408.tsv.gz
+blockchair_dash_blocks_${my_year}0409.tsv.gz
+blockchair_dash_blocks_${my_year}0410.tsv.gz
+blockchair_dash_blocks_${my_year}0411.tsv.gz
+blockchair_dash_blocks_${my_year}0412.tsv.gz
+blockchair_dash_blocks_${my_year}0413.tsv.gz
+blockchair_dash_blocks_${my_year}0414.tsv.gz
+blockchair_dash_blocks_${my_year}0415.tsv.gz
+blockchair_dash_blocks_${my_year}0416.tsv.gz
+blockchair_dash_blocks_${my_year}0417.tsv.gz
+blockchair_dash_blocks_${my_year}0418.tsv.gz
+blockchair_dash_blocks_${my_year}0419.tsv.gz
+blockchair_dash_blocks_${my_year}0420.tsv.gz
+blockchair_dash_blocks_${my_year}0421.tsv.gz
+blockchair_dash_blocks_${my_year}0422.tsv.gz
+blockchair_dash_blocks_${my_year}0423.tsv.gz
+blockchair_dash_blocks_${my_year}0424.tsv.gz
+blockchair_dash_blocks_${my_year}0425.tsv.gz
+blockchair_dash_blocks_${my_year}0426.tsv.gz
+blockchair_dash_blocks_${my_year}0427.tsv.gz
+blockchair_dash_blocks_${my_year}0428.tsv.gz
+blockchair_dash_blocks_${my_year}0429.tsv.gz
+blockchair_dash_blocks_${my_year}0430.tsv.gz
+blockchair_dash_blocks_${my_year}0501.tsv.gz
+blockchair_dash_blocks_${my_year}0502.tsv.gz
+blockchair_dash_blocks_${my_year}0503.tsv.gz
+blockchair_dash_blocks_${my_year}0504.tsv.gz
+blockchair_dash_blocks_${my_year}0505.tsv.gz
+blockchair_dash_blocks_${my_year}0506.tsv.gz
+blockchair_dash_blocks_${my_year}0507.tsv.gz
+blockchair_dash_blocks_${my_year}0508.tsv.gz
+blockchair_dash_blocks_${my_year}0509.tsv.gz
+blockchair_dash_blocks_${my_year}0510.tsv.gz
+blockchair_dash_blocks_${my_year}0511.tsv.gz
+blockchair_dash_blocks_${my_year}0512.tsv.gz
+blockchair_dash_blocks_${my_year}0513.tsv.gz
+blockchair_dash_blocks_${my_year}0514.tsv.gz
+blockchair_dash_blocks_${my_year}0515.tsv.gz
+blockchair_dash_blocks_${my_year}0516.tsv.gz
+blockchair_dash_blocks_${my_year}0517.tsv.gz
+blockchair_dash_blocks_${my_year}0518.tsv.gz
+blockchair_dash_blocks_${my_year}0519.tsv.gz
+blockchair_dash_blocks_${my_year}0520.tsv.gz
+blockchair_dash_blocks_${my_year}0521.tsv.gz
+blockchair_dash_blocks_${my_year}0522.tsv.gz
+blockchair_dash_blocks_${my_year}0523.tsv.gz
+blockchair_dash_blocks_${my_year}0524.tsv.gz
+blockchair_dash_blocks_${my_year}0525.tsv.gz
+blockchair_dash_blocks_${my_year}0526.tsv.gz
+blockchair_dash_blocks_${my_year}0527.tsv.gz
+blockchair_dash_blocks_${my_year}0528.tsv.gz
+blockchair_dash_blocks_${my_year}0529.tsv.gz
+blockchair_dash_blocks_${my_year}0530.tsv.gz
+blockchair_dash_blocks_${my_year}0531.tsv.gz
+blockchair_dash_blocks_${my_year}0601.tsv.gz
+blockchair_dash_blocks_${my_year}0602.tsv.gz
+blockchair_dash_blocks_${my_year}0603.tsv.gz
+blockchair_dash_blocks_${my_year}0604.tsv.gz
+blockchair_dash_blocks_${my_year}0605.tsv.gz
+blockchair_dash_blocks_${my_year}0606.tsv.gz
+blockchair_dash_blocks_${my_year}0607.tsv.gz
+blockchair_dash_blocks_${my_year}0608.tsv.gz
+blockchair_dash_blocks_${my_year}0609.tsv.gz
+blockchair_dash_blocks_${my_year}0610.tsv.gz
+blockchair_dash_blocks_${my_year}0611.tsv.gz
+blockchair_dash_blocks_${my_year}0612.tsv.gz
+blockchair_dash_blocks_${my_year}0613.tsv.gz
+blockchair_dash_blocks_${my_year}0614.tsv.gz
+blockchair_dash_blocks_${my_year}0615.tsv.gz
+blockchair_dash_blocks_${my_year}0616.tsv.gz
+blockchair_dash_blocks_${my_year}0617.tsv.gz
+blockchair_dash_blocks_${my_year}0618.tsv.gz
+blockchair_dash_blocks_${my_year}0619.tsv.gz
+blockchair_dash_blocks_${my_year}0620.tsv.gz
+blockchair_dash_blocks_${my_year}0621.tsv.gz
+blockchair_dash_blocks_${my_year}0622.tsv.gz
+blockchair_dash_blocks_${my_year}0623.tsv.gz
+blockchair_dash_blocks_${my_year}0624.tsv.gz
+blockchair_dash_blocks_${my_year}0625.tsv.gz
+blockchair_dash_blocks_${my_year}0626.tsv.gz
+blockchair_dash_blocks_${my_year}0627.tsv.gz
+blockchair_dash_blocks_${my_year}0628.tsv.gz
+blockchair_dash_blocks_${my_year}0629.tsv.gz
+blockchair_dash_blocks_${my_year}0630.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+fn_quarter_3() { (
+    my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_${my_year}0701.tsv.gz
+blockchair_dash_blocks_${my_year}0702.tsv.gz
+blockchair_dash_blocks_${my_year}0703.tsv.gz
+blockchair_dash_blocks_${my_year}0704.tsv.gz
+blockchair_dash_blocks_${my_year}0705.tsv.gz
+blockchair_dash_blocks_${my_year}0706.tsv.gz
+blockchair_dash_blocks_${my_year}0707.tsv.gz
+blockchair_dash_blocks_${my_year}0708.tsv.gz
+blockchair_dash_blocks_${my_year}0709.tsv.gz
+blockchair_dash_blocks_${my_year}0710.tsv.gz
+blockchair_dash_blocks_${my_year}0711.tsv.gz
+blockchair_dash_blocks_${my_year}0712.tsv.gz
+blockchair_dash_blocks_${my_year}0713.tsv.gz
+blockchair_dash_blocks_${my_year}0714.tsv.gz
+blockchair_dash_blocks_${my_year}0715.tsv.gz
+blockchair_dash_blocks_${my_year}0716.tsv.gz
+blockchair_dash_blocks_${my_year}0717.tsv.gz
+blockchair_dash_blocks_${my_year}0718.tsv.gz
+blockchair_dash_blocks_${my_year}0719.tsv.gz
+blockchair_dash_blocks_${my_year}0720.tsv.gz
+blockchair_dash_blocks_${my_year}0721.tsv.gz
+blockchair_dash_blocks_${my_year}0722.tsv.gz
+blockchair_dash_blocks_${my_year}0723.tsv.gz
+blockchair_dash_blocks_${my_year}0724.tsv.gz
+blockchair_dash_blocks_${my_year}0725.tsv.gz
+blockchair_dash_blocks_${my_year}0726.tsv.gz
+blockchair_dash_blocks_${my_year}0727.tsv.gz
+blockchair_dash_blocks_${my_year}0728.tsv.gz
+blockchair_dash_blocks_${my_year}0729.tsv.gz
+blockchair_dash_blocks_${my_year}0730.tsv.gz
+blockchair_dash_blocks_${my_year}0731.tsv.gz
+blockchair_dash_blocks_${my_year}0801.tsv.gz
+blockchair_dash_blocks_${my_year}0802.tsv.gz
+blockchair_dash_blocks_${my_year}0803.tsv.gz
+blockchair_dash_blocks_${my_year}0804.tsv.gz
+blockchair_dash_blocks_${my_year}0805.tsv.gz
+blockchair_dash_blocks_${my_year}0806.tsv.gz
+blockchair_dash_blocks_${my_year}0807.tsv.gz
+blockchair_dash_blocks_${my_year}0808.tsv.gz
+blockchair_dash_blocks_${my_year}0809.tsv.gz
+blockchair_dash_blocks_${my_year}0810.tsv.gz
+blockchair_dash_blocks_${my_year}0811.tsv.gz
+blockchair_dash_blocks_${my_year}0812.tsv.gz
+blockchair_dash_blocks_${my_year}0813.tsv.gz
+blockchair_dash_blocks_${my_year}0814.tsv.gz
+blockchair_dash_blocks_${my_year}0815.tsv.gz
+blockchair_dash_blocks_${my_year}0816.tsv.gz
+blockchair_dash_blocks_${my_year}0817.tsv.gz
+blockchair_dash_blocks_${my_year}0818.tsv.gz
+blockchair_dash_blocks_${my_year}0819.tsv.gz
+blockchair_dash_blocks_${my_year}0820.tsv.gz
+blockchair_dash_blocks_${my_year}0821.tsv.gz
+blockchair_dash_blocks_${my_year}0822.tsv.gz
+blockchair_dash_blocks_${my_year}0823.tsv.gz
+blockchair_dash_blocks_${my_year}0824.tsv.gz
+blockchair_dash_blocks_${my_year}0825.tsv.gz
+blockchair_dash_blocks_${my_year}0826.tsv.gz
+blockchair_dash_blocks_${my_year}0827.tsv.gz
+blockchair_dash_blocks_${my_year}0828.tsv.gz
+blockchair_dash_blocks_${my_year}0829.tsv.gz
+blockchair_dash_blocks_${my_year}0830.tsv.gz
+blockchair_dash_blocks_${my_year}0831.tsv.gz
+blockchair_dash_blocks_${my_year}0901.tsv.gz
+blockchair_dash_blocks_${my_year}0902.tsv.gz
+blockchair_dash_blocks_${my_year}0903.tsv.gz
+blockchair_dash_blocks_${my_year}0904.tsv.gz
+blockchair_dash_blocks_${my_year}0905.tsv.gz
+blockchair_dash_blocks_${my_year}0906.tsv.gz
+blockchair_dash_blocks_${my_year}0907.tsv.gz
+blockchair_dash_blocks_${my_year}0908.tsv.gz
+blockchair_dash_blocks_${my_year}0909.tsv.gz
+blockchair_dash_blocks_${my_year}0910.tsv.gz
+blockchair_dash_blocks_${my_year}0911.tsv.gz
+blockchair_dash_blocks_${my_year}0912.tsv.gz
+blockchair_dash_blocks_${my_year}0913.tsv.gz
+blockchair_dash_blocks_${my_year}0914.tsv.gz
+blockchair_dash_blocks_${my_year}0915.tsv.gz
+blockchair_dash_blocks_${my_year}0916.tsv.gz
+blockchair_dash_blocks_${my_year}0917.tsv.gz
+blockchair_dash_blocks_${my_year}0918.tsv.gz
+blockchair_dash_blocks_${my_year}0919.tsv.gz
+blockchair_dash_blocks_${my_year}0920.tsv.gz
+blockchair_dash_blocks_${my_year}0921.tsv.gz
+blockchair_dash_blocks_${my_year}0922.tsv.gz
+blockchair_dash_blocks_${my_year}0923.tsv.gz
+blockchair_dash_blocks_${my_year}0924.tsv.gz
+blockchair_dash_blocks_${my_year}0925.tsv.gz
+blockchair_dash_blocks_${my_year}0926.tsv.gz
+blockchair_dash_blocks_${my_year}0927.tsv.gz
+blockchair_dash_blocks_${my_year}0928.tsv.gz
+blockchair_dash_blocks_${my_year}0929.tsv.gz
+blockchair_dash_blocks_${my_year}0930.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+fn_quarter_4() { (
+    my_year="${1}"
+    my_yname="${2}"
+
+    my_files="blockchair_dash_blocks_${my_year}1001.tsv.gz
+blockchair_dash_blocks_${my_year}1002.tsv.gz
+blockchair_dash_blocks_${my_year}1003.tsv.gz
+blockchair_dash_blocks_${my_year}1004.tsv.gz
+blockchair_dash_blocks_${my_year}1005.tsv.gz
+blockchair_dash_blocks_${my_year}1006.tsv.gz
+blockchair_dash_blocks_${my_year}1007.tsv.gz
+blockchair_dash_blocks_${my_year}1008.tsv.gz
+blockchair_dash_blocks_${my_year}1009.tsv.gz
+blockchair_dash_blocks_${my_year}1010.tsv.gz
+blockchair_dash_blocks_${my_year}1011.tsv.gz
+blockchair_dash_blocks_${my_year}1012.tsv.gz
+blockchair_dash_blocks_${my_year}1013.tsv.gz
+blockchair_dash_blocks_${my_year}1014.tsv.gz
+blockchair_dash_blocks_${my_year}1015.tsv.gz
+blockchair_dash_blocks_${my_year}1016.tsv.gz
+blockchair_dash_blocks_${my_year}1017.tsv.gz
+blockchair_dash_blocks_${my_year}1018.tsv.gz
+blockchair_dash_blocks_${my_year}1019.tsv.gz
+blockchair_dash_blocks_${my_year}1020.tsv.gz
+blockchair_dash_blocks_${my_year}1021.tsv.gz
+blockchair_dash_blocks_${my_year}1022.tsv.gz
+blockchair_dash_blocks_${my_year}1023.tsv.gz
+blockchair_dash_blocks_${my_year}1024.tsv.gz
+blockchair_dash_blocks_${my_year}1025.tsv.gz
+blockchair_dash_blocks_${my_year}1026.tsv.gz
+blockchair_dash_blocks_${my_year}1027.tsv.gz
+blockchair_dash_blocks_${my_year}1028.tsv.gz
+blockchair_dash_blocks_${my_year}1029.tsv.gz
+blockchair_dash_blocks_${my_year}1030.tsv.gz
+blockchair_dash_blocks_${my_year}1031.tsv.gz
+blockchair_dash_blocks_${my_year}1101.tsv.gz
+blockchair_dash_blocks_${my_year}1102.tsv.gz
+blockchair_dash_blocks_${my_year}1103.tsv.gz
+blockchair_dash_blocks_${my_year}1104.tsv.gz
+blockchair_dash_blocks_${my_year}1105.tsv.gz
+blockchair_dash_blocks_${my_year}1106.tsv.gz
+blockchair_dash_blocks_${my_year}1107.tsv.gz
+blockchair_dash_blocks_${my_year}1108.tsv.gz
+blockchair_dash_blocks_${my_year}1109.tsv.gz
+blockchair_dash_blocks_${my_year}1110.tsv.gz
+blockchair_dash_blocks_${my_year}1111.tsv.gz
+blockchair_dash_blocks_${my_year}1112.tsv.gz
+blockchair_dash_blocks_${my_year}1113.tsv.gz
+blockchair_dash_blocks_${my_year}1114.tsv.gz
+blockchair_dash_blocks_${my_year}1115.tsv.gz
+blockchair_dash_blocks_${my_year}1116.tsv.gz
+blockchair_dash_blocks_${my_year}1117.tsv.gz
+blockchair_dash_blocks_${my_year}1118.tsv.gz
+blockchair_dash_blocks_${my_year}1119.tsv.gz
+blockchair_dash_blocks_${my_year}1120.tsv.gz
+blockchair_dash_blocks_${my_year}1121.tsv.gz
+blockchair_dash_blocks_${my_year}1122.tsv.gz
+blockchair_dash_blocks_${my_year}1123.tsv.gz
+blockchair_dash_blocks_${my_year}1124.tsv.gz
+blockchair_dash_blocks_${my_year}1125.tsv.gz
+blockchair_dash_blocks_${my_year}1126.tsv.gz
+blockchair_dash_blocks_${my_year}1127.tsv.gz
+blockchair_dash_blocks_${my_year}1128.tsv.gz
+blockchair_dash_blocks_${my_year}1129.tsv.gz
+blockchair_dash_blocks_${my_year}1130.tsv.gz
+blockchair_dash_blocks_${my_year}1201.tsv.gz
+blockchair_dash_blocks_${my_year}1202.tsv.gz
+blockchair_dash_blocks_${my_year}1203.tsv.gz
+blockchair_dash_blocks_${my_year}1204.tsv.gz
+blockchair_dash_blocks_${my_year}1205.tsv.gz
+blockchair_dash_blocks_${my_year}1206.tsv.gz
+blockchair_dash_blocks_${my_year}1207.tsv.gz
+blockchair_dash_blocks_${my_year}1208.tsv.gz
+blockchair_dash_blocks_${my_year}1209.tsv.gz
+blockchair_dash_blocks_${my_year}1210.tsv.gz
+blockchair_dash_blocks_${my_year}1211.tsv.gz
+blockchair_dash_blocks_${my_year}1212.tsv.gz
+blockchair_dash_blocks_${my_year}1213.tsv.gz
+blockchair_dash_blocks_${my_year}1214.tsv.gz
+blockchair_dash_blocks_${my_year}1215.tsv.gz
+blockchair_dash_blocks_${my_year}1216.tsv.gz
+blockchair_dash_blocks_${my_year}1217.tsv.gz
+blockchair_dash_blocks_${my_year}1218.tsv.gz
+blockchair_dash_blocks_${my_year}1219.tsv.gz
+blockchair_dash_blocks_${my_year}1220.tsv.gz
+blockchair_dash_blocks_${my_year}1221.tsv.gz
+blockchair_dash_blocks_${my_year}1222.tsv.gz
+blockchair_dash_blocks_${my_year}1223.tsv.gz
+blockchair_dash_blocks_${my_year}1224.tsv.gz
+blockchair_dash_blocks_${my_year}1225.tsv.gz
+blockchair_dash_blocks_${my_year}1226.tsv.gz
+blockchair_dash_blocks_${my_year}1227.tsv.gz
+blockchair_dash_blocks_${my_year}1228.tsv.gz
+blockchair_dash_blocks_${my_year}1229.tsv.gz
+blockchair_dash_blocks_${my_year}1230.tsv.gz
+blockchair_dash_blocks_${my_year}1231.tsv.gz"
+
+    fn_concat_year "${my_files}" "${my_yname}"
+); }
+
+my_years='2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+2023
+2024
+2025
+2026
+2027
+2028
+2029
+2030
+2031
+2032'
+
+main() { (
+    cd "${HOME}/Projects/Dash/dashblockchair/" || exit 1
+    mkdir -p ./yearlies/
+
+    for my_year in ${my_years}; do
+        fn_annual "${my_year}"
+    done
+); }
+
+main
