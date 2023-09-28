@@ -21,10 +21,15 @@ git clone https://github.com/dashhive/blockchair-dash-mirror.git ./dashblockchai
 
 ```sh
 pushd ~/Projects/Dash/dashblockchair/
-./bin/blockchair_dash_quarter
+
+rm -rf ./gz/
+git restore ./gz/
+
+git pull
+./bin/blockchair_dash_annual
 
 ./bin/blockchair_dash_download
-./bin/blockchair_dash_quarter
+./bin/blockchair_dash_annual
 ```
 
 ```txt
